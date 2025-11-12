@@ -646,7 +646,31 @@
      <p class="text-gray-600 mt-4 text-sm">Design By <a href="tel:9122975899" class="text-orange-400 hover:text-orange-300 transition font-semibold">GMB Guru</a> - <a href="tel:9122975899" class="text-orange-400 hover:text-orange-300 transition">📞 9122975899</a></p>
     </div>
    </div>
-  </footer>
+  </footer><!-- Popup Modal -->
+  <div id="popup-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+   <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl transform transition-all">
+    <div class="relative"><!-- Close Button --> <button id="close-popup" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-3xl font-bold z-10"> × </button> <!-- Popup Content -->
+     <div class="p-8">
+      <div class="text-center mb-6">
+       <div class="bg-orange-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4"><span class="text-4xl">🎨</span>
+       </div>
+       <h3 class="text-3xl font-bold text-gray-900 mb-2">Special Offer!</h3>
+       <p class="text-lg text-gray-600">Get <span class="text-orange-500 font-bold">FREE Site Visit</span> + <span class="text-orange-500 font-bold">10% OFF</span> on your first project!</p>
+      </div>
+      <form id="popup-form" class="space-y-4">
+       <div><label for="popup-name" class="block text-gray-700 font-medium mb-2">Your Name *</label> <input type="text" id="popup-name" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition" placeholder="Enter your name">
+       </div>
+       <div><label for="popup-phone" class="block text-gray-700 font-medium mb-2">Phone Number *</label> <input type="tel" id="popup-phone" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition" placeholder="Enter your phone">
+       </div>
+       <div><label for="popup-service" class="block text-gray-700 font-medium mb-2">Service Required *</label> <select id="popup-service" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition bg-white text-gray-900"> <option value="">Select a service</option> <option value="painting">Painting Services</option> <option value="civil">Civil Work &amp; Renovation</option> <option value="waterproofing">Waterproofing</option> <option value="other">Other</option> </select>
+       </div><button type="submit" class="w-full bg-orange-500 text-white py-4 rounded-lg font-semibold hover:bg-orange-600 transition shadow-lg text-lg"> Claim Your Offer Now! 🎁 </button>
+       <p class="text-sm text-gray-500 text-center">✓ Limited time offer &nbsp; ✓ No obligation</p>
+      </form>
+      <div id="popup-form-message" class="mt-4 p-4 rounded-lg hidden"></div>
+     </div>
+    </div>
+   </div>
+  </div>
   <script>
         const defaultConfig = {
             company_name: "Hariom Enterprises",
@@ -663,6 +687,92 @@
             text_color: "#111827",
             accent_color: "#3b82f6"
         };
+
+        // Smart Popup Timing Logic
+        let popupShown = false;
+        const popupModal = document.getElementById('popup-modal');
+        const closePopupBtn = document.getElementById('close-popup');
+
+        // Check if popup was already shown in this session
+        const popupShownToday = sessionStorage.getItem('popupShown');
+
+        function showPopup() {
+            if (!popupShown && !popupShownToday) {
+                popupModal.classList.remove('hidden');
+                popupShown = true;
+                sessionStorage.setItem('popupShown', 'true');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            }
+        }
+
+        function hidePopup() {
+            popupModal.classList.add('hidden');
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+
+        // Show popup after 15 seconds
+        setTimeout(showPopup, 15000);
+
+        // Show popup on scroll (after 50% of page)
+        let scrollTriggered = false;
+        window.addEventListener('scroll', function() {
+            if (!scrollTriggered && !popupShown && !popupShownToday) {
+                const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                if (scrollPercent > 50) {
+                    showPopup();
+                    scrollTriggered = true;
+                }
+            }
+        });
+
+        // Show popup on exit intent (mouse leaving viewport)
+        document.addEventListener('mouseleave', function(e) {
+            if (e.clientY < 0 && !popupShown && !popupShownToday) {
+                showPopup();
+            }
+        });
+
+        // Close popup button
+        closePopupBtn.addEventListener('click', hidePopup);
+
+        // Close popup when clicking outside
+        popupModal.addEventListener('click', function(e) {
+            if (e.target === popupModal) {
+                hidePopup();
+            }
+        });
+
+        // Popup Form Handler
+        document.getElementById('popup-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('popup-name').value;
+            const phone = document.getElementById('popup-phone').value;
+            const service = document.getElementById('popup-service').value;
+            
+            // Create WhatsApp message
+            let message = `Hello Hariom Enterprises! I want to claim the special offer (FREE Site Visit + 10% OFF)!\n\n`;
+            message += `Name: ${name}\n`;
+            message += `Phone: ${phone}\n`;
+            message += `Service: ${service}\n`;
+            message += `\nPlease contact me to schedule the free site visit.`;
+            
+            const whatsappNumber = '917304352246';
+            const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            
+            window.open(whatsappURL, '_blank', 'noopener,noreferrer');
+            
+            const formMessage = document.getElementById('popup-form-message');
+            formMessage.textContent = '✓ Opening WhatsApp... Send the message to claim your offer!';
+            formMessage.className = 'mt-4 p-4 rounded-lg bg-green-100 text-green-800 font-semibold';
+            formMessage.classList.remove('hidden');
+            
+            this.reset();
+            
+            setTimeout(() => {
+                hidePopup();
+            }, 2000);
+        });
 
         async function onConfigChange(config) {
             const companyName = config.company_name || defaultConfig.company_name;
@@ -864,5 +974,5 @@
             });
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99d510c13642dc97',t:'MTc2Mjk0MDQwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99d528932174dc97',t:'MTc2Mjk0MTM3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
